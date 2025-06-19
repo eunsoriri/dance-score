@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>나처럼 해봐요</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #f0f0f0; margin: 0; padding: 20px; }
+    #loading { font-size: 1.2em; margin: 20px; color: #555; }
+    #preview { position: relative; width: 400px; height: 400px; margin: 20px auto; }
+    video, canvas { position: absolute; top: 0; left: 0; width: 400px; height: 400px; border-radius: 10px; }
+    #score { font-size: 1.5em; margin-top: 440px; }
+  </style>
+</head>
+<body>
+  <h1>나처럼 해봐요</h1>
+  <div id="loading">모델 로딩 중... 잠시만 기다려주세요.</div>
+  <div id="preview">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+  </div>
+  <div id="score">점수: 0</div>
+
+  <!-- 필요한 TFJS 모듈만 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@3.20.0/dist/tf-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@3.20.0/dist/tf-backend-webgl.min.js"></script>
+  <!-- Teachable Machine Pose 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.4/dist/teachablemachine-pose.min.js"></script>
+
+  <script>
+    const URL = "https://teachablemachine.withgoogle.com/models/fJgu3SfBOW/";
+    let model, video, canvas, ctx, score = 0;
+
+    async function init() {
+      document.getElementById('loading').style.display = 'block';
+      await tf.setBackend('webgl');
+      model = await tmPose.load(URL + "model.json", URL + "metadata.json");
+
+      video = document.getElementById("webcam");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      await video.play();
+
+      canvas = document.getElementById("overlay");
+      ctx = canvas.getContext("2d");
+
+      document.getElementById('loading').style.display = 'none';
+      requestAnimationFrame(loop);
+    }
+
+    async function loop() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const { pose, posenetOutput } = await model.estimatePose(video);
+      const prediction = await model.predict(posenetOutput);
+
+      tmPose.drawKeypoints(pose.keypoints, 0.6, ctx);
+      tmPose.drawSkeleton(pose.keypoints, 0.7, ctx);
+
+      const top = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
+      if (top.probability > 0.6) {
+        score++;
+        document.getElementById("score").innerText = `점수: ${score}`;
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    init();
+  </script>
+</body>
+</html>
