@@ -8,37 +8,27 @@
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
     }
-    video {
+    #webcam-container, canvas {
       width: 400px;
+      height: 400px;
       margin: 20px auto;
-      border-radius: 10px;
       display: block;
+      border-radius: 10px;
+      background-color: #000;
     }
     #score {
-      font-size: 2em;
-      margin-top: 20px;
+      font-size: 1.5em;
+      color: #333;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>나처럼 해봐요!</h1>
-  <video id="webcam" autoplay playsinline muted></video>
+  <div id="webcam-container"></div>
   <div id="score">점수: 0</div>
 
-  <!-- 필수 라이브러리 로딩 -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.4/dist/teachablemachine-pose.min.js"></script>
-
-  <script type="text/javascript">
-    const URL = "https://teachablemachine.withgoogle.com/models/fJgu3SfBOW/";
-    let model, webcam, score = 0;
-
-    async function init() {
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
-
-      model = await tmPose.load(modelURL, metadataURL);
-
-      const flip = true;
-      webcam = new tmPose.Webcam(400,
+  <!-- TensorFlow.js
