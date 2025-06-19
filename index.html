@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h1>Teachable Machine + Video 스트림</h1>
+  <h1>그대로 멈춰라!</h1>
   <div id="preview">
     <video id="webcam" autoplay playsinline muted></video>
     <canvas id="overlay"></canvas>
@@ -59,9 +59,9 @@
       tmPose.drawKeypoints(pose.keypoints, 0.6, ctx);
       tmPose.drawSkeleton(pose.keypoints, 0.7, ctx);
 
-      // 4) 간단 점수: 확률 0.9 이상일 때 +1
+      // 4) 간단 점수: 확률 0.6 이상일 때 +1
       const top = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
-      if (top.probability > 0.9) {
+      if (top.probability > 0.6) {
         score++;
         document.getElementById("score").innerText = `점수: ${score}`;
       }
