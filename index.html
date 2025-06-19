@@ -1,84 +1,44 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>나처럼 해봐요</title>
-    <meta charset="UTF-8" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background-color: #f5f5f5;
-      }
-      video, canvas {
-        width: 400px;
-        height: auto;
-        margin: 10px auto;
-        display: block;
-        border-radius: 10px;
-      }
-      #score {
-        font-size: 24px;
-        color: #333;
-        margin-top: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>나처럼 해봐요!</h1>
-    <video id="webcam" autoplay playsinline muted></video>
-    <canvas id="canvas"></canvas>
-    <div id="score">점수: 0</div>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>나처럼 해봐요</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+    video {
+      width: 400px;
+      margin: 20px auto;
+      border-radius: 10px;
+      display: block;
+    }
+    #score {
+      font-size: 2em;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>나처럼 해봐요!</h1>
+  <video id="webcam" autoplay playsinline muted></video>
+  <div id="score">점수: 0</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.4/dist/teachablemachine-pose.min.js"></script>
+  <!-- 필수 라이브러리 로딩 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.4/dist/teachablemachine-pose.min.js"></script>
 
-    <script type="text/javascript">
-      const URL = "https://teachablemachine.withgoogle.com/models/v_slnM2St/";
+  <script type="text/javascript">
+    const URL = "https://teachablemachine.withgoogle.com/models/fJgu3SfBOW/";
+    let model, webcam, score = 0;
 
-      let model, webcam, ctx, canvas;
-      let score = 0;
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
 
-      async function init() {
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
+      model = await tmPose.load(modelURL, metadataURL);
 
-        model = await tmPose.load(modelURL, metadataURL);
-        const size = 400;
-        const flip = true;
-
-        webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
-        await webcam.setup();
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        canvas = document.getElementById("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        ctx = canvas.getContext("2d");
-      }
-
-      async function loop() {
-        webcam.update();
-        await predict();
-        window.requestAnimationFrame(loop);
-      }
-
-      async function predict() {
-        const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
-        const prediction = await model.predict(posenetOutput);
-
-        // 점수 예시: 특정 포즈의 확률이 높을 때 점수 증가
-        if (prediction[0].probability > 0.8) {
-          score++;
-        }
-
-        ctx.drawImage(webcam.canvas, 0, 0);
-        tmPose.drawPose(pose, ctx);
-
-        document.getElementById("score").innerText = `점수: ${score}`;
-      }
-
-      init();
-    </script>
-  </body>
-</html>
+      const flip = true;
+      webcam = new tmPose.Webcam(400,
